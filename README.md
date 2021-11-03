@@ -28,9 +28,9 @@ browser path /d /p /e
   - [x] Opera.
 - [ ] Test `open` subcommand with;
   - [x] Chrome;
-  - [ ] Edge;
-  - [ ] IE;
-  - [ ] Firefox;
+  - [x] Edge;
+  - [ ] IE (for each link a new browser instance gets created);
+  - [ ] Firefox (same as with IE);
   - [ ] Go;
   - [ ] Opera.
 - [ ] Add support for other browsers.
