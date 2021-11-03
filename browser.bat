@@ -236,7 +236,7 @@ rem IN THE SOFTWARE.
     set key=HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\Shell\Associations
     set key=%key%\UrlAssociations\http\UserChoice
     set lookup=reg query %key%
-    for /f "tokens=3 delims= " %%i in ('%lookup% ^| findstr "ProgID"') do (
+    for /f "tokens=3 delims= " %%i in ('%lookup% ^| findstr /i "ProgId"') do (
         set browserid=%%i
     )
 
