@@ -43,6 +43,7 @@ rem IN THE SOFTWARE.
             for %%c in ("%command%") do (
                 echo See '%%~nc /?'. 2>&1
             )
+
             endlocal
             exit /b 1
         )
