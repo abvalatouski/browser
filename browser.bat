@@ -221,6 +221,9 @@ rem IN THE SOFTWARE.
         )
     )
 
+    rem Waiting the browser to startup.
+    timeout 1 >nul
+
     for %%l in (%links%) do (
         "%browserpath%" "%%l"
     )
