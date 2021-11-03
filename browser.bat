@@ -30,22 +30,24 @@ rem IN THE SOFTWARE.
     shift
     if /i not "%subcommand%" == "path" (
         if /i not "%subcommand%" == "open" (
-            if "%subcommand%" == "/?" (
-                call :usage %command%
+            if /i not "%subcommand%" == "name" (
+                if "%subcommand%" == "/?" (
+                    call :usage %command%
+                    endlocal
+                    exit /b
+                ) else if "%subcommand%" == "" (
+                    echo No subcommand provided. >&2
+                ) else (
+                    echo Unknown subcommand '%subcommand%'. >&2 
+                )
+
+                for %%c in ("%command%") do (
+                    echo See '%%~nc /?'. >&2
+                )
+
                 endlocal
-                exit /b
-            ) else if "%subcommand%" == "" (
-                echo No subcommand provided. 2>&1
-            ) else (
-                echo Unknown subcommand '%subcommand%'. 2>&1 
+                exit /b 1
             )
-
-            for %%c in ("%command%") do (
-                echo See '%%~nc /?'. 2>&1
-            )
-
-            endlocal
-            exit /b 1
         )
     )
 
@@ -80,8 +82,8 @@ rem IN THE SOFTWARE.
             shift
             goto :parsearg
         ) else if not "%0" == "" (
-            echo Unexpected argument '%0'. 2>&1
-            echo See '%command% %subcommand% /?'. 2>&1
+            echo Unexpected argument '%0'. >&2
+            echo See '%command% %subcommand% /?'. >&2
             endlocal
             exit /b 1
         )
@@ -94,6 +96,13 @@ rem IN THE SOFTWARE.
             set links=%links% "%0"
             shift
             goto :parsearg
+        )
+    ) else if /i "%subcommand%" == "name" (
+        if not "%0" == "" (
+            echo Unexpected argument '%0'. >&2
+            echo See '%command% %subcommand% /?'. >&2
+            endlocal
+            exit /b 1
         )
     )
 
@@ -108,12 +117,19 @@ rem IN THE SOFTWARE.
         echo.
         echo Subcommands
         echo.
-        echo     path    Print path to the default browser.
-        echo             See '%~n1 path /?'.
+        echo     name    Print name of the default browser.
+        echo             See '%~n1 name /?'.
         echo.
         echo     open    Open links in the separate window of the default
         echo             browser and print ID of the launched process.
         echo             See '%~n1 open /?'.
+        echo.
+        echo     path    Print path to the default browser.
+        echo             See '%~n1 path /?'.
+        echo.
+        echo Supported Browsers
+        echo.
+        echo     Brave, Chrome, Edge, Firefox, IE, Opera.
         echo.
         echo Source Code
         echo.
@@ -125,7 +141,7 @@ rem IN THE SOFTWARE.
     ) else if /i "%~2" == "path" (
         echo Prints path to the default browser.
         echo.
-        echo     %~n1 %~2 [/?] [/d] [/p] [/f] [/e]
+        echo     %~n1 %~2 [/?] [/d] [/e] [/f] [/p]
         echo.
         echo Options
         echo.
@@ -134,16 +150,16 @@ rem IN THE SOFTWARE.
         echo.
         echo     /d  Disable drive letter printing.
         echo.
-        echo     /p  Disable parent folder printing.
+        echo     /e  Disable extension printing.
         echo.
         echo     /f  Disable filename printing.
         echo.
-        echo     /e  Disable extension printing.
+        echo     /p  Disable parent folder printing.
         echo.
         echo Example
         echo.
         echo     ^> rem On author's machine.
-        echo     ^> %~n1 path /d /p /e
+        echo     ^> %~n1 path /d /e /p
         echo     chrome
     ) else if /i "%~2" == "open" (
         echo Opens links in the separate window of the default browser
@@ -162,6 +178,20 @@ rem IN THE SOFTWARE.
         echo.
         echo     ^> %~n1 open www.google.com unicode-table.com
         echo     1337
+    ) else if "%~2" == "name" (
+        echo Prints name of the default browser.
+        echo.
+        echo     %~n1 %~2 [/?]
+        echo.
+        echo Options
+        echo.
+        echo.    /?  Show this help message.
+        echo.
+        echo Example
+        echo.
+        echo     ^> rem On author's machine.
+        echo     ^> %~n1 name
+        echo     Chrome
     )
 
     exit /b
@@ -171,6 +201,11 @@ rem IN THE SOFTWARE.
     setlocal
 
     call :getpath
+    call :getname
+
+    if not "%errorlevel%" == "0" (
+        echo Unsupported browser. >&2
+    )
 
     if "%drive%" == "1" (
         for %%p in ("%browserpath%") do (
@@ -207,14 +242,38 @@ rem IN THE SOFTWARE.
     setlocal
 
     call :getpath
+    call :getname
 
-    call :spawn "%browserpath%"    
+    if not "%errorlevel%" == "0" (
+        call :unsupported
+        exit /b 1
+    )
+
+    call :spawn "%browserpath%"
 
     rem Waiting the browser to startup.
     timeout 1 >nul
 
     for %%l in (%links%) do (
         "%browserpath%" "%%l"
+    )
+
+    endlocal
+    exit /b
+)
+
+:name (
+    setlocal
+
+    call :getpath
+    call :getname
+
+    if "%errorlevel%" == "0" (
+        echo %browsername%
+    ) else (
+        call :unsupported
+        endlocal
+        exit /b 1
     )
 
     endlocal
@@ -247,6 +306,54 @@ rem IN THE SOFTWARE.
             echo %%i
         )
     )
+
+    exit /b
+)
+
+:getname (
+    echo "%browserpath%" | findstr /i "Brave" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=Brave
+        exit /b
+    )
+
+    echo "%browserpath%" | findstr /i "Chrome" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=Chrome
+        exit /b
+    )
+
+    echo "%browserpath%" | findstr /i "Edge" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=Edge
+        exit /b
+    )
+
+    echo "%browserpath%" | findstr /i "Firefox" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=Firefox
+        exit /b
+    )
+
+    echo "%browserpath%" | findstr /i "Internet Explorer" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=IE
+        exit /b
+    )
+
+    echo "%browserpath%" | findstr /i "Opera" >nul
+    if "%errorlevel%" == "0" (
+        set browsername=Opera
+        exit /b
+    )
+
+    exit /b 1
+)
+
+:unsupported (
+    echo Unsupported browser. >&2
+    echo Try 'browser path 2^>nul' to see what's installed on your machine. >&2
+    echo Type 'browser /?' to see the list of supported browsers. >&2
 
     exit /b
 )
