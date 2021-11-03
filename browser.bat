@@ -122,11 +122,6 @@ rem IN THE SOFTWARE.
         echo.
         echo     See 'type %~f1'
         echo     or 'https://github.com/abvalatouski/browser'.
-        echo.
-        echo Notes
-        echo.
-        echo     Tested on Windows 10 with:
-        echo     Chrome, Edge, Firefox, IE and Opera.
     ) else if /i "%~2" == "path" (
         echo Prints path to the default browser.
         echo.
