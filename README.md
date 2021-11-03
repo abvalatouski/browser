@@ -33,5 +33,5 @@ browser path /d /p /e
   - [ ] Firefox (same as with IE);
   - [ ] Go;
   - [ ] Opera.
-- [ ] Open only the given links in separate window.
+- [ ] Open only the given links in a separate window.
 - [ ] Add support for other browsers.
