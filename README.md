@@ -7,7 +7,7 @@ The script is targeted on Windows 10.
 ### Installation
 
 ```console
-powershell -c "Invoke-WebRequest -Outfile browser.bat -Url https://raw.githubusercontent.com/abvalatouski/browser/master/browser.bat"
+powershell -c "Invoke-WebRequest -Outfile browser.bat -Uri https://raw.githubusercontent.com/abvalatouski/browser/master/browser.bat"
 ```
 
 ### Running
