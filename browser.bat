@@ -208,14 +208,7 @@ rem IN THE SOFTWARE.
 
     call :getpath
 
-    rem `wmic prints empty line into `stderr`.
-    for /f "tokens=3 delims=; " %%i in (
-        'wmic process call Create "%browserpath%" 2^>nul ^| findstr "ProcessId"'
-    ) do (
-        if "%quiet%" == "0" (
-            echo %%i
-        )
-    )
+    call :spawn "%browserpath%"    
 
     rem Waiting the browser to startup.
     timeout 1 >nul
@@ -240,6 +233,19 @@ rem IN THE SOFTWARE.
     set lookup=reg query %key%
     for /f delims^=^"^ tokens^=2 %%b in ('%lookup% ^| findstr "REG_SZ"') do (
         set browserpath=%%b
+    )
+
+    exit /b
+)
+
+:spawn (
+    rem `wmic prints an empty line into `stderr`.
+    for /f "tokens=3 delims=; " %%i in (
+        'wmic process call Create "%~1" 2^>nul ^| findstr "ProcessId"'
+    ) do (
+        if "%quiet%" == "0" (
+            echo %%i
+        )
     )
 
     exit /b
