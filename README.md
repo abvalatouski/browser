@@ -33,3 +33,4 @@ browser /?
 ## Goals
 
 - [ ] Implement `open` subcommand for supported browsers properly.
+- [ ] Fix invalid PID in `open` subcommand.
