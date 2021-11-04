@@ -56,7 +56,6 @@ rem IN THE SOFTWARE.
     set filename=1
     set extension=1
     
-    set quiet=0
     set links=
 
 :parsearg
@@ -88,12 +87,8 @@ rem IN THE SOFTWARE.
             exit /b 1
         )
     ) else if /i "%subcommand%" == "open" (
-        if /i "%0" == "/q" (
-            set quiet=1
-            shift
-            goto :parsearg
-        ) else if not "%0" == "" (
-            set links=%links% "%0"
+        if not "%0" == "" (
+            set links=%links% %0
             shift
             goto :parsearg
         )
@@ -121,7 +116,7 @@ rem IN THE SOFTWARE.
         echo             See '%~n1 name /?'.
         echo.
         echo     open    Open links in the separate window of the default
-        echo             browser and print ID of the launched process.
+        echo             browser.
         echo             See '%~n1 open /?'.
         echo.
         echo     path    Print path to the default browser.
@@ -162,22 +157,17 @@ rem IN THE SOFTWARE.
         echo     ^> %~n1 path /d /e /p
         echo     chrome
     ) else if /i "%~2" == "open" (
-        echo Opens links in the separate window of the default browser
-        echo and prints ID of the launched window process.
+        echo Opens links in the separate window of the default browser.
         echo.
-        echo     %~n1 %~2 [/?] [/q]
+        echo     %~n1 %~2 [/?] {url}
         echo.
         echo Options
         echo.
         echo.    /?  Show this help message.
-        echo         Other options will be ignored.
-        echo.
-        echo     /q  Disable process ID printing.
         echo.
         echo Example
         echo.
         echo     ^> %~n1 open www.google.com unicode-table.com
-        echo     1337
     ) else if "%~2" == "name" (
         echo Prints name of the default browser.
         echo.
@@ -249,13 +239,22 @@ rem IN THE SOFTWARE.
         exit /b 1
     )
 
-    call :spawn "%browserpath%"
-
-    rem Waiting the browser to startup.
-    timeout 1 >nul
-
-    for %%l in (%links%) do (
-        "%browserpath%" "%%l"
+    for %%p in ("%browserpath%") do (
+        if "%browsername%" == "Brave" (
+            start /d "%%~dp%%~pp" %%~np%%~xp --new-window %links%
+        ) else if "%browsername%" == "Chrome" (
+            start /d "%%~dp%%~pp" %%~np%%~xp --new-window %links%
+        ) else if "%browsername%" == "Edge" (
+            echo Not implemented. >&2
+            exit /b 1
+        ) else if "%browsername%" == "Firefox" (
+            start /d "%%~dp%%~pp" %%~np%%~xp %links%
+        ) else if "%browsername%" == "IE" (
+            echo Not implemented. >&2
+            exit /b 1
+        ) else if "%browsername%" == "Opera" (
+            start /d "%%~dp%%~pp" %%~np%%~xp --new-window %links%
+        )
     )
 
     endlocal
@@ -292,19 +291,6 @@ rem IN THE SOFTWARE.
     set lookup=reg query %key%
     for /f delims^=^"^ tokens^=2 %%b in ('%lookup% ^| findstr "REG_SZ"') do (
         set browserpath=%%b
-    )
-
-    exit /b
-)
-
-:spawn (
-    rem `wmic prints an empty line into `stderr`.
-    for /f "tokens=3 delims=; " %%i in (
-        'wmic process call Create "%~1" 2^>nul ^| findstr "ProcessId"'
-    ) do (
-        if "%quiet%" == "0" (
-            echo %%i
-        )
     )
 
     exit /b
